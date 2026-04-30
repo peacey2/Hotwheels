@@ -46,8 +46,15 @@ body{font-family:'Barlow',sans-serif;color:var(--text);overflow-x:hidden}
 }
 .login-logo-icon { font-size: 48px; margin-bottom: 16px; }
 .login-title { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 8px; }
-.login-sub { color: var(--text3); font-size: 15px; margin-bottom: 32px; line-height: 1.5; }
-.login-btn-group { display: flex; flex-direction: column; gap: 12px; }
+.login-sub { color: var(--text3); font-size: 15px; margin-bottom: 24px; line-height: 1.5; }
+
+.login-divider {
+  border-top: 1px solid var(--border); margin: 24px 0; padding-top: 20px; position: relative;
+}
+.login-admin-label {
+  font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+}
+.login-error { color: var(--red); font-size: 13px; margin-bottom: 12px; display: none; font-weight: 500; }
 
 /* ════════════════════════════════════════
    MOBILE  (< 900px)
@@ -400,10 +407,16 @@ body.mobile-layout .stripe{width:100%}
   <div class="login-card">
     <div class="login-logo-icon">📦</div>
     <div class="login-title">Collector's Garage</div>
-    <div class="login-sub">Welcome! Please choose how you want to enter the application.</div>
-    <div class="login-btn-group">
-      <button class="btn btn-primary" onclick="login('admin')">Enter as Admin (Manage)</button>
-      <button class="btn" onclick="login('viewer')">Enter as Guest (View Only)</button>
+    <div class="login-sub">Welcome! View the collection or log in to manage it.</div>
+    
+    <button class="btn" onclick="login('viewer')" style="margin-bottom: 8px;">Enter as Guest (View Only)</button>
+    
+    <div class="login-divider">
+      <div class="login-admin-label">Admin Access</div>
+      <input type="text" id="loginUser" class="form-input" placeholder="Username" style="margin-bottom: 12px; text-align: center;" autocomplete="off" />
+      <input type="password" id="loginPass" class="form-input" placeholder="Password" style="margin-bottom: 16px; text-align: center;" />
+      <div class="login-error" id="loginError">Incorrect username or password.</div>
+      <button class="btn btn-primary" onclick="attemptAdminLogin()">Log In</button>
     </div>
   </div>
 </div>
@@ -588,6 +601,13 @@ body.mobile-layout .stripe{width:100%}
 </div>
 
 <script>
+// ==========================================
+// SET YOUR ADMIN LOGIN CREDENTIALS HERE
+// ==========================================
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "secret123";
+// ==========================================
+
 const STORAGE_KEY = 'hw_garage_v2';
 let cars = [];
 let editingId = null;
@@ -598,6 +618,20 @@ const categories = ['Hot Wheels', 'Action Figures', 'Lego'];
 
 /* ── Role Management ── */
 let currentUserRole = null; // 'admin' or 'viewer'
+
+function attemptAdminLogin() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    login('admin');
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
 
 function login(role) {
   currentUserRole = role;
