@@ -3,8 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Collection Garage</title>
+<title>Collection Garage (Cloud Edition)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Firebase Libraries (Compat version for simple drop-in) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
 /* ─── TOKENS ─────────────────────────────────────── */
 :root {
@@ -397,16 +402,27 @@ body.mobile-layout .stripe{width:100%}
   /* hide mobile elements */
   .mob-header,.mob-stats,.mob-grid,.section-label{display:none}
   .overlay{display:none!important}
+  
+  /* Loading state */
+  #loadingState { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; letter-spacing: 1px; }
+  .spinner { width: 40px; height: 40px; border: 4px solid var(--border2); border-top-color: var(--red); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 }
 </style>
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div id="loadingState">
+  <div class="spinner"></div>
+  Connecting to Cloud...
+</div>
+
 <!-- LOGIN OVERLAY -->
-<div id="loginScreen">
+<div id="loginScreen" style="display:none;">
   <div class="login-card">
-    <div class="login-logo-icon">📦</div>
-    <div class="login-title">Collector's Garage</div>
+    <div class="login-logo-icon">☁️</div>
+    <div class="login-title">Collector's Cloud Garage</div>
     <div class="login-sub">Welcome! View the collection or log in to manage it.</div>
     
     <button class="btn" onclick="login('viewer')" style="margin-bottom: 8px;">Enter as Guest (View Only)</button>
@@ -431,7 +447,7 @@ body.mobile-layout .stripe{width:100%}
         <div class="logo-flame">📦</div>
         <div>
           <div class="logo-text">Collector's</div>
-          <div class="logo-sub">My Garage</div>
+          <div class="logo-sub">Cloud Garage</div>
         </div>
       </div>
       <div class="header-actions">
@@ -488,7 +504,7 @@ body.mobile-layout .stripe{width:100%}
       </div>
       <div class="form-actions">
         <button class="btn" onclick="closeMobAdd()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveCar('mob')">Save Item</button>
+        <button class="btn btn-primary" id="mobSaveBtn" onclick="saveCar('mob')">Save Item</button>
       </div>
     </div>
   </div>
@@ -506,8 +522,8 @@ body.mobile-layout .stripe{width:100%}
 <aside class="desk-sidebar desktop-only" style="flex-direction:column">
   <div class="desk-logo">
     <div class="desk-logo-row">
-      <div class="desk-flame">📦</div>
-      <div class="desk-logo-text">Collector's<br>Garage</div>
+      <div class="desk-flame">☁️</div>
+      <div class="desk-logo-text">Collector's<br>Cloud Garage</div>
     </div>
   </div>
 
@@ -538,7 +554,7 @@ body.mobile-layout .stripe{width:100%}
   <button class="desk-add-btn" id="deskAddBtn" onclick="openDeskAdd()">+ Add Item</button>
 
   <div class="desk-footer">
-    <div class="desk-footer-txt">Collector's Garage<br><span id="roleText">Logged out</span></div>
+    <div class="desk-footer-txt">Collector's Cloud Garage<br><span id="roleText">Logged out</span></div>
     <button class="logout-btn" onclick="logout()">Exit</button>
   </div>
 </aside>
@@ -595,26 +611,61 @@ body.mobile-layout .stripe{width:100%}
     </div>
     <div class="desk-modal-actions">
       <button class="btn" onclick="closeDeskAdd()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCar('desk')">Save Item</button>
+      <button class="btn btn-primary" id="deskSaveBtn" onclick="saveCar('desk')">Save Item</button>
     </div>
   </div>
 </div>
 
 <script>
 // ==========================================
-// SET YOUR ADMIN LOGIN CREDENTIALS HERE
+// 1. SET YOUR ADMIN LOGIN CREDENTIALS HERE
 // ==========================================
-const ADMIN_USER = "Peacey";
-const ADMIN_PASS = "M&P2005";
-// ==========================================
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "secret123";
 
-const STORAGE_KEY = 'hw_garage_v2';
+// ==========================================
+// 2. PASTE YOUR FIREBASE CONFIGURATION HERE
+// ==========================================
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 let cars = [];
 let editingId = null;
 let viewingId = null;
 let pendingImgMob = null;
 let pendingImgDesk = null;
 const categories = ['Hot Wheels', 'Action Figures', 'Lego'];
+
+/* ── Firebase Real-Time Listener ── */
+db.collection("items").orderBy("added", "desc").onSnapshot((querySnapshot) => {
+  cars = [];
+  querySnapshot.forEach((doc) => {
+    cars.push(doc.data());
+  });
+  
+  // Hide loading screen once data arrives
+  document.getElementById('loadingState').style.display = 'none';
+  if (!currentUserRole) {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+  
+  updateStats();
+  if (currentUserRole) render(); // Re-render if already logged in
+}, (error) => {
+  console.error("Error connecting to Firebase: ", error);
+  document.getElementById('loadingState').innerHTML = `Error connecting to database.<br><span style="font-size:16px; margin-top:10px;">Did you paste your Firebase Config and set rules to 'Test Mode'?</span>`;
+});
+
 
 /* ── Role Management ── */
 let currentUserRole = null; // 'admin' or 'viewer'
@@ -649,22 +700,6 @@ function logout() {
   currentUserRole = null;
   document.getElementById('loginScreen').style.display = 'flex';
   if(isDesktop()) { closeDeskDetail(); } else { closeMobDetail(); }
-}
-
-/* ── Storage ── */
-function save(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cars));
-  } catch(e){
-    try {
-      const slim=cars.map(c=>({...c,img:c.img?'__img__':null}));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
-      alert('Storage almost full — some images may not have saved. Try using smaller photos.');
-    } catch(e2){ console.error('Storage failed', e2); }
-  }
-}
-function load(){
-  try{ const d=localStorage.getItem(STORAGE_KEY); if(d) cars=JSON.parse(d) }catch(e){ cars=[] }
 }
 
 /* ── Helpers ── */
@@ -786,11 +821,12 @@ function handleFile(e, ctx){
   e.target.value='';
 }
 
-/* ── Save ── */
-function saveCar(ctx){
+/* ── Save to Firebase ── */
+async function saveCar(ctx){
   const nameEl=document.getElementById(ctx==='mob'?'mobCarName':'deskCarName');
   const notesEl=document.getElementById(ctx==='mob'?'mobCarNotes':'deskCarNotes');
   const catEl=document.getElementById(ctx==='mob'?'mobCategory':'deskCategory');
+  const saveBtn=document.getElementById(ctx==='mob'?'mobSaveBtn':'deskSaveBtn');
   
   const name=nameEl.value.trim();
   const category=catEl.value;
@@ -799,18 +835,45 @@ function saveCar(ctx){
   nameEl.style.borderColor='';
   const notes=notesEl.value.trim();
   const pendingImg=ctx==='mob'?pendingImgMob:pendingImgDesk;
-  if(editingId){
-    const idx=cars.findIndex(c=>c.id===editingId);
-    if(idx>=0) cars[idx]={...cars[idx],name,notes,category,img:pendingImg!==null?pendingImg:cars[idx].img};
-  } else {
-    cars.unshift({id:uid(),name,notes,category,img:pendingImg,added:Date.now()});
+  
+  // Show loading state on button
+  saveBtn.textContent = 'Saving...';
+  saveBtn.disabled = true;
+
+  try {
+    if(editingId){
+      const c = cars.find(x => x.id === editingId);
+      const newImg = pendingImg !== null ? pendingImg : c.img;
+      await db.collection("items").doc(editingId).update({
+        name: name,
+        notes: notes,
+        category: category,
+        img: newImg
+      });
+    } else {
+      const newId = uid();
+      await db.collection("items").doc(newId).set({
+        id: newId,
+        name: name,
+        notes: notes,
+        category: category,
+        img: pendingImg,
+        added: Date.now()
+      });
+    }
+
+    // Success cleanup
+    if(ctx==='mob'){ closeMobAdd(); closeMobDetail() }
+    else { closeDeskAdd() }
+    editingId=null; pendingImgMob=null; pendingImgDesk=null;
+    
+  } catch (error) {
+    console.error("Error writing document: ", error);
+    alert("Error saving to cloud. Make sure your Firebase Rules are set to Test Mode.");
+  } finally {
+    saveBtn.textContent = 'Save Item';
+    saveBtn.disabled = false;
   }
-  save(); updateStats();
-  if(ctx==='mob'){ closeMobAdd(); closeMobDetail() }
-  else { closeDeskAdd() }
-  editingId=null; pendingImgMob=null; pendingImgDesk=null;
-  render();
-  if(isDesktop()&&!editingId) openDeskDetail(cars[0].id);
 }
 
 /* ─────────── MOBILE actions ─────────── */
@@ -919,23 +982,24 @@ function openDeskEdit(){
   document.getElementById('deskModalOverlay').classList.add('active');
 }
 
-/* ─────────── Delete ─────────── */
-function confirmDelete(ctx){
+/* ─────────── Delete from Firebase ─────────── */
+async function confirmDelete(ctx){
   const c=cars.find(x=>x.id===viewingId);
   if(!c) return;
   if(confirm(`Delete "${c.name}"?`)){
-    cars=cars.filter(x=>x.id!==viewingId);
-    save(); updateStats();
-    if(ctx==='mob'){ closeMobDetail(); }
-    else { closeDeskDetail(); }
-    render();
+    try {
+      await db.collection("items").doc(viewingId).delete();
+      if(ctx==='mob'){ closeMobDetail(); }
+      else { closeDeskDetail(); }
+    } catch(error) {
+      console.error("Error deleting document: ", error);
+      alert("Error deleting item from cloud.");
+    }
   }
 }
 
 /* ─────────── Init ─────────── */
-load();
-updateStats();
-// Do not render immediately, wait for login selection
+// Screen resizes
 window.addEventListener('resize', () => { if(currentUserRole) render(); });
 </script>
 </body>
