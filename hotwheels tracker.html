@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Hot Wheels Garage</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ─── TOKENS ─────────────────────────────────────── */
+:root {
+  --red: #E8321A;
+  --red-dark: #B82712;
+  --red-glow: rgba(232,50,26,0.22);
+  --yellow: #F5C518;
+  --bg:   #0E0E0F;
+  --bg2:  #161618;
+  --bg3:  #1E1E21;
+  --bg4:  #27272B;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text:  #F2F2F3;
+  --text2: #9A9A9E;
+  --text3: #5E5E63;
+  --r: 14px;
+  --rsm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg)}
+body{font-family:'Barlow',sans-serif;color:var(--text);overflow-x:hidden}
+
+/* ─── STRIPE ─────────────────────────────────────── */
+.stripe{height:3px;flex-shrink:0;
+  background:repeating-linear-gradient(90deg,
+    var(--red) 0,var(--red) 18px,transparent 18px,transparent 24px,
+    var(--yellow) 24px,var(--yellow) 30px,transparent 30px,transparent 36px)}
+
+/* ════════════════════════════════════════
+   MOBILE  (< 900px)
+════════════════════════════════════════ */
+.desktop-only{display:none}
+
+body.mobile-layout{
+  display:flex;flex-direction:column;
+  min-height:100vh;max-width:480px;margin:0 auto;
+  padding-bottom:100px
+}
+body.mobile-layout .stripe{width:100%}
+
+/* header */
+.mob-header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(14,14,15,0.93);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:14px 16px 12px
+}
+.mob-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-flame{width:32px;height:32px;background:var(--red);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-text{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1}
+.logo-sub{font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.add-btn-mob{
+  width:40px;height:40px;border-radius:50%;background:var(--red);
+  border:none;color:#fff;font-size:26px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .15s,transform .1s;box-shadow:0 0 20px var(--red-glow)
+}
+.add-btn-mob:active{background:var(--red-dark);transform:scale(.93)}
+
+/* search mob */
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.35;pointer-events:none}
+.search-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;
+  font-size:15px;padding:10px 12px 10px 38px;outline:none;transition:border-color .15s
+}
+.search-input:focus{border-color:var(--border2)}
+.search-input::placeholder{color:var(--text3)}
+
+/* stats mob */
+.mob-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px 6px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 12px;text-align:center}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1}
+.stat-num.accent{color:var(--red)}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
+
+/* grid mob */
+.section-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;
+  color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;padding:14px 16px 8px
+}
+.mob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
+.car-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:border-color .15s,transform .1s
+}
+.car-card:active,.car-card:hover{border-color:var(--border2)}
+.car-card:active{transform:scale(.97)}
+.car-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--bg3)}
+.car-img-placeholder{width:100%;aspect-ratio:4/3;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;font-size:36px}
+.car-body{padding:10px 11px 12px}
+.car-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;
+  letter-spacing:.3px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.car-note{font-size:12px;color:var(--text2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.car-date{font-size:10px;color:var(--text3);margin-top:5px;letter-spacing:.3px}
+
+/* empty */
+.empty{text-align:center;padding:60px 32px;grid-column:1/-1}
+.empty-icon{font-size:56px;margin-bottom:16px}
+.empty-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--text3);line-height:1.5}
+
+/* overlays / sheets */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;
+  align-items:flex-end;justify-content:center}
+.overlay.active{display:flex}
+.sheet{
+  background:var(--bg2);border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border2);width:100%;max-width:480px;
+  max-height:92vh;overflow-y:auto;padding:0 0 32px;
+  animation:slideUp .22s ease-out
+}
+@keyframes slideUp{from{transform:translateY(80px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet-handle{width:36px;height:4px;background:var(--bg4);border-radius:2px;margin:12px auto 20px}
+.sheet-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;
+  color:var(--text);padding:0 20px 16px;border-bottom:1px solid var(--border);
+  margin-bottom:20px;letter-spacing:.4px
+}
+.form-body{padding:0 20px}
+.form-field{margin-bottom:18px}
+.form-label{display:block;font-size:11px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.form-input,.form-textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--rsm);color:var(--text);font-family:'Barlow',sans-serif;
+  font-size:16px;padding:12px 14px;outline:none;transition:border-color .15s
+}
+.form-input:focus,.form-textarea:focus{border-color:var(--red)}
+.form-textarea{resize:none;line-height:1.5}
+.photo-picker{
+  width:100%;aspect-ratio:16/9;background:var(--bg3);
+  border:1.5px dashed var(--border2);border-radius:var(--r);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;transition:border-color .15s
+}
+.photo-picker:hover,.photo-picker:active{border-color:var(--red)}
+.photo-picker img{width:100%;height:100%;object-fit:cover}
+.photo-picker-inner{text-align:center}
+.photo-icon{font-size:32px;margin-bottom:8px}
+.photo-hint{font-size:13px;color:var(--text3)}
+.form-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:24px}
+.btn{
+  border-radius:var(--rsm);border:1px solid var(--border2);background:transparent;
+  color:var(--text2);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;
+  padding:13px;cursor:pointer;transition:background .15s,color .15s
+}
+.btn:hover{background:var(--bg4)}
+.btn:active{background:var(--bg4)}
+.btn-primary{background:var(--red);border-color:transparent;color:#fff;
+  box-shadow:0 4px 20px var(--red-glow)}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-danger{border-color:rgba(232,50,26,.3);color:var(--red)}
+.btn-danger:hover{background:rgba(232,50,26,.1)}
+.detail-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;
+  background:var(--bg3);border-radius:12px;margin-bottom:16px}
+.detail-img-placeholder{width:100%;aspect-ratio:16/9;background:var(--bg3);
+  border-radius:12px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:64px}
+.detail-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:.5px;margin-bottom:8px}
+.detail-note{font-size:15px;color:var(--text2);line-height:1.6;white-space:pre-wrap;margin-bottom:12px}
+.detail-meta{font-size:12px;color:var(--text3);margin-bottom:24px}
+.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ════════════════════════════════════════
+   DESKTOP  (≥ 900px)
+════════════════════════════════════════ */
+@media(min-width:900px){
+  .mobile-only{display:none!important}
+  .desktop-only{display:flex}
+
+  body{
+    display:grid;
+    grid-template-rows:3px 1fr;
+    grid-template-columns:280px 1fr;
+    height:100vh;overflow:hidden;
+    max-width:none;margin:0;padding-bottom:0
+  }
+  body > .stripe{grid-column:1/-1;grid-row:1}
+
+  /* SIDEBAR */
+  .desk-sidebar{
+    grid-column:1;grid-row:2;
+    display:flex;flex-direction:column;
+    background:var(--bg2);border-right:1px solid var(--border);
+    height:100%;overflow:hidden
+  }
+  .desk-logo{
+    padding:28px 24px 20px;border-bottom:1px solid var(--border);flex-shrink:0
+  }
+  .desk-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .desk-flame{
+    width:40px;height:40px;background:var(--red);border-radius:10px;
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    box-shadow:0 0 24px var(--red-glow)
+  }
+  .desk-logo-text{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:.5px}
+  .desk-logo-sub{font-size:11px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;margin-left:52px}
+
+  .desk-stats{padding:20px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .desk-stats-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px;font-weight:600}
+  .desk-stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+  .desk-stat-row:last-child{border-bottom:none}
+  .desk-stat-name{font-size:13px;color:var(--text2)}
+  .desk-stat-val{
+    font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;
+    color:var(--text);min-width:32px;text-align:right
+  }
+  .desk-stat-val.accent{color:var(--red)}
+
+  .desk-search-wrap{padding:16px 24px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative}
+  .desk-search-wrap svg{position:absolute;left:36px;top:50%;transform:translateY(-50%);opacity:.3;pointer-events:none}
+  .desk-search{
+    width:100%;background:var(--bg3);border:1px solid var(--border);
+    border-radius:10px;color:var(--text);font-family:'Barlow',sans-serif;
+    font-size:14px;padding:10px 12px 10px 36px;outline:none;transition:border-color .15s
+  }
+  .desk-search:focus{border-color:var(--red)}
+  .desk-search::placeholder{color:var(--text3)}
+
+  .desk-add-btn{
+    margin:16px 24px;padding:13px;background:var(--red);border:none;
+    border-radius:var(--rsm);color:#fff;font-family:'Barlow Condensed',sans-serif;
+    font-size:16px;font-weight:700;letter-spacing:.5px;cursor:pointer;
+    transition:background .15s;box-shadow:0 4px 20px var(--red-glow);
+    text-transform:uppercase
+  }
+  .desk-add-btn:hover{background:var(--red-dark)}
+
+  .desk-footer{margin-top:auto;padding:16px 24px;border-top:1px solid var(--border);flex-shrink:0}
+  .desk-footer-txt{font-size:11px;color:var(--text3);line-height:1.6}
+
+  /* MAIN AREA */
+  .desk-main{
+    grid-column:2;grid-row:2;
+    display:flex;flex-direction:column;
+    height:100%;overflow:hidden;background:var(--bg)
+  }
+  .desk-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 28px 16px;border-bottom:1px solid var(--border);flex-shrink:0
+  }
+  .desk-section-title{
+    font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;
+    color:var(--text3);letter-spacing:1.4px;text-transform:uppercase
+  }
+  .desk-count-badge{
+    background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+    font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;
+    color:var(--text3);padding:3px 12px;letter-spacing:.5px
+  }
+
+  /* the scrollable car grid */
+  .desk-scroll{flex:1;overflow-y:auto;padding:20px 28px}
+  .desk-scroll::-webkit-scrollbar{width:6px}
+  .desk-scroll::-webkit-scrollbar-track{background:transparent}
+  .desk-scroll::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+  .desk-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:16px
+  }
+  .desk-car-card{
+    background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+    overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s
+  }
+  .desk-car-card:hover{border-color:var(--red);transform:translateY(-2px)}
+  .desk-car-card.selected{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+  .desk-car-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--bg3)}
+  .desk-car-placeholder{width:100%;aspect-ratio:4/3;background:var(--bg3);
+    display:flex;align-items:center;justify-content:center;font-size:42px}
+  .desk-car-body{padding:12px 14px 14px}
+  .desk-car-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;
+    letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .desk-car-note{font-size:12px;color:var(--text2);margin-top:4px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .desk-car-date{font-size:10px;color:var(--text3);margin-top:6px;letter-spacing:.3px}
+
+  /* DETAIL PANEL */
+  .desk-detail-panel{
+    position:fixed;right:0;top:3px;bottom:0;width:360px;
+    background:var(--bg2);border-left:1px solid var(--border2);
+    display:none;flex-direction:column;z-index:100;
+    animation:slideInRight .2s ease-out
+  }
+  .desk-detail-panel.open{display:flex}
+  @keyframes slideInRight{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  .desk-panel-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0
+  }
+  .desk-panel-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;
+    font-weight:700;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase}
+  .desk-close-btn{
+    width:28px;height:28px;border-radius:50%;background:var(--bg3);
+    border:1px solid var(--border);color:var(--text2);font-size:16px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background .15s
+  }
+  .desk-close-btn:hover{background:var(--bg4)}
+
+  .desk-panel-body{flex:1;overflow-y:auto;padding:20px}
+  .desk-panel-img{width:100%;aspect-ratio:16/9;object-fit:cover;
+    border-radius:10px;display:block;background:var(--bg3);margin-bottom:18px}
+  .desk-panel-placeholder{width:100%;aspect-ratio:16/9;background:var(--bg3);
+    border-radius:10px;margin-bottom:18px;display:flex;align-items:center;
+    justify-content:center;font-size:72px}
+  .desk-panel-name{font-family:'Barlow Condensed',sans-serif;font-size:30px;
+    font-weight:800;letter-spacing:.5px;margin-bottom:10px;line-height:1.1}
+  .desk-panel-note{font-size:14px;color:var(--text2);line-height:1.7;
+    white-space:pre-wrap;margin-bottom:10px}
+  .desk-panel-meta{font-size:11px;color:var(--text3);margin-bottom:20px}
+
+  .desk-panel-footer{padding:16px 20px;border-top:1px solid var(--border);
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0}
+
+  /* MODAL on desktop = centered dialog */
+  .desk-modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;
+    display:none;align-items:center;justify-content:center
+  }
+  .desk-modal-overlay.active{display:flex}
+  .desk-modal{
+    background:var(--bg2);border:1px solid var(--border2);border-radius:18px;
+    width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;
+    animation:modalPop .2s ease-out
+  }
+  @keyframes modalPop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+  .desk-modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 26px 18px;border-bottom:1px solid var(--border)
+  }
+  .desk-modal-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;
+    font-weight:800;letter-spacing:.5px}
+  .desk-modal-body{padding:24px 26px}
+  .desk-modal-actions{
+    display:grid;grid-template-columns:1fr 2fr;gap:12px;
+    padding:0 26px 26px
+  }
+
+  /* bigger photo picker on desktop */
+  .desk-modal .photo-picker{aspect-ratio:21/9}
+  .desk-modal .form-input,.desk-modal .form-textarea{font-size:15px}
+
+  .desk-empty{
+    grid-column:1/-1;text-align:center;padding:80px 32px
+  }
+  .desk-empty-icon{font-size:72px;margin-bottom:20px}
+  .desk-empty-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;
+    font-weight:700;margin-bottom:10px}
+  .desk-empty-sub{font-size:15px;color:var(--text3);line-height:1.6}
+
+  /* hide mobile elements */
+  .mob-header,.mob-stats,.mob-grid,.section-label{display:none}
+  .overlay{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="stripe"></div>
+
+<!-- ═══════════════ MOBILE LAYOUT ═══════════════ -->
+<div class="mobile-only" id="mobileRoot" style="display:contents">
+  <header class="mob-header">
+    <div class="mob-header-top">
+      <div class="logo">
+        <div class="logo-flame">🔥</div>
+        <div>
+          <div class="logo-text">Hot Wheels</div>
+          <div class="logo-sub">My Garage</div>
+        </div>
+      </div>
+      <button class="add-btn-mob" onclick="openMobAdd()" aria-label="Add car">+</button>
+    </div>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="5" stroke="white" stroke-width="1.5"/>
+        <path d="M10 10L14 14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input class="search-input" type="text" id="mobSearch" placeholder="Search your garage..." oninput="render()" autocomplete="off" />
+    </div>
+  </header>
+
+  <div class="mob-stats">
+    <div class="stat-card"><div class="stat-num accent" id="mStat0">0</div><div class="stat-label">Cars</div></div>
+    <div class="stat-card"><div class="stat-num" id="mStat1">0</div><div class="stat-label">Photos</div></div>
+    <div class="stat-card"><div class="stat-num" id="mStat2">0</div><div class="stat-label">Notes</div></div>
+  </div>
+
+  <div class="section-label" id="mobSectionLabel">Collection</div>
+  <div class="mob-grid" id="mobGrid"></div>
+</div>
+
+<!-- Mobile: Add/Edit sheet -->
+<div class="overlay mobile-only" id="mobAddOverlay" onclick="handleMobOverlay(event,'mobAddOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="mobSheetTitle">Add to Garage</div>
+    <div class="form-body">
+      <div class="form-field">
+        <label class="form-label">Photo</label>
+        <div class="photo-picker" id="mobPhotoPicker" onclick="document.getElementById('mobFileInput').click()">
+          <div class="photo-picker-inner"><div class="photo-icon">📷</div><div class="photo-hint">Tap to add photo</div></div>
+        </div>
+        <input type="file" id="mobFileInput" accept="image/*" style="display:none" onchange="handleFile(event,'mob')" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Model Name</label>
+        <input class="form-input" type="text" id="mobCarName" placeholder="e.g. Bone Shaker, '69 Camaro..." autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" id="mobCarNotes" rows="4" placeholder="Series, year, condition, value..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="closeMobAdd()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCar('mob')">Save Car</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile: Detail sheet -->
+<div class="overlay mobile-only" id="mobDetailOverlay" onclick="handleMobOverlay(event,'mobDetailOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="form-body" id="mobDetailBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ DESKTOP LAYOUT ═══════════════ -->
+<aside class="desk-sidebar desktop-only" style="flex-direction:column">
+  <div class="desk-logo">
+    <div class="desk-logo-row">
+      <div class="desk-flame">🔥</div>
+      <div class="desk-logo-text">Hot Wheels</div>
+    </div>
+    <div class="desk-logo-sub">My Garage</div>
+  </div>
+
+  <div class="desk-stats">
+    <div class="desk-stats-title">Collection Stats</div>
+    <div class="desk-stat-row">
+      <span class="desk-stat-name">Total cars</span>
+      <span class="desk-stat-val accent" id="dStat0">0</span>
+    </div>
+    <div class="desk-stat-row">
+      <span class="desk-stat-name">With photos</span>
+      <span class="desk-stat-val" id="dStat1">0</span>
+    </div>
+    <div class="desk-stat-row">
+      <span class="desk-stat-name">With notes</span>
+      <span class="desk-stat-val" id="dStat2">0</span>
+    </div>
+  </div>
+
+  <div class="desk-search-wrap">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+      <circle cx="6.5" cy="6.5" r="5" stroke="white" stroke-width="1.5"/>
+      <path d="M10 10L14 14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <input class="desk-search" type="text" id="deskSearch" placeholder="Search garage..." oninput="render()" autocomplete="off" />
+  </div>
+
+  <button class="desk-add-btn" onclick="openDeskAdd()">+ Add Car</button>
+
+  <div class="desk-footer">
+    <div class="desk-footer-txt">Hot Wheels Garage<br>Your personal collection tracker</div>
+  </div>
+</aside>
+
+<main class="desk-main desktop-only" style="display:flex">
+  <div class="desk-topbar">
+    <span class="desk-section-title" id="deskSectionTitle">Collection</span>
+    <span class="desk-count-badge" id="deskCountBadge">0 cars</span>
+  </div>
+  <div class="desk-scroll">
+    <div class="desk-grid" id="deskGrid"></div>
+  </div>
+</main>
+
+<!-- Desktop: Detail Panel -->
+<div class="desk-detail-panel desktop-only" id="deskDetailPanel">
+  <div class="desk-panel-header">
+    <span class="desk-panel-title">Car Details</span>
+    <button class="desk-close-btn" onclick="closeDeskDetail()">✕</button>
+  </div>
+  <div class="desk-panel-body" id="deskPanelBody"></div>
+  <div class="desk-panel-footer" id="deskPanelFooter"></div>
+</div>
+
+<!-- Desktop: Add/Edit Modal -->
+<div class="desk-modal-overlay" id="deskModalOverlay" onclick="handleDeskOverlay(event)">
+  <div class="desk-modal" id="deskModal">
+    <div class="desk-modal-header">
+      <span class="desk-modal-title" id="deskModalTitle">Add to Garage</span>
+      <button class="desk-close-btn" onclick="closeDeskAdd()">✕</button>
+    </div>
+    <div class="desk-modal-body">
+      <div class="form-field">
+        <label class="form-label">Photo</label>
+        <div class="photo-picker" id="deskPhotoPicker" onclick="document.getElementById('deskFileInput').click()">
+          <div class="photo-picker-inner"><div class="photo-icon">📷</div><div class="photo-hint">Click to add photo</div></div>
+        </div>
+        <input type="file" id="deskFileInput" accept="image/*" style="display:none" onchange="handleFile(event,'desk')" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Model Name</label>
+        <input class="form-input" type="text" id="deskCarName" placeholder="e.g. Bone Shaker, '69 Camaro, Twin Mill..." autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" id="deskCarNotes" rows="4" placeholder="Series, year, condition, value, where you got it..."></textarea>
+      </div>
+    </div>
+    <div class="desk-modal-actions">
+      <button class="btn" onclick="closeDeskAdd()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCar('desk')">Save Car</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'hw_garage_v2';
+let cars = [];
+let editingId = null;
+let viewingId = null;
+let pendingImgMob = null;
+let pendingImgDesk = null;
+
+/* ── Storage ── */
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(cars)) }catch(e){} }
+function load(){
+  try{ const d=localStorage.getItem(STORAGE_KEY); if(d) cars=JSON.parse(d) }catch(e){ cars=[] }
+}
+
+/* ── Helpers ── */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7) }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function fmtDate(ts){ if(!ts)return ''; return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) }
+function isDesktop(){ return window.innerWidth >= 900 }
+
+/* ── Stats ── */
+function updateStats(){
+  const total = cars.length;
+  const photos = cars.filter(c=>c.img).length;
+  const notes = cars.filter(c=>c.notes&&c.notes.trim()).length;
+  // mobile
+  const m0=document.getElementById('mStat0'); if(m0) m0.textContent=total;
+  const m1=document.getElementById('mStat1'); if(m1) m1.textContent=photos;
+  const m2=document.getElementById('mStat2'); if(m2) m2.textContent=notes;
+  // desktop
+  const d0=document.getElementById('dStat0'); if(d0) d0.textContent=total;
+  const d1=document.getElementById('dStat1'); if(d1) d1.textContent=photos;
+  const d2=document.getElementById('dStat2'); if(d2) d2.textContent=notes;
+}
+
+/* ── Render ── */
+function render(){
+  const q = (document.getElementById(isDesktop()?'deskSearch':'mobSearch')||{value:''}).value.toLowerCase();
+  const filtered = cars.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.notes||'').toLowerCase().includes(q));
+
+  if(isDesktop()){
+    const title = document.getElementById('deskSectionTitle');
+    const badge = document.getElementById('deskCountBadge');
+    if(title) title.textContent = q ? 'Search Results' : 'Collection';
+    if(badge) badge.textContent = filtered.length + (filtered.length===1?' car':' cars');
+    renderDeskGrid(filtered);
+  } else {
+    const lbl = document.getElementById('mobSectionLabel');
+    if(lbl) lbl.textContent = q ? `Results (${filtered.length})` : `Collection${cars.length?' · '+cars.length+' cars':''}`;
+    renderMobGrid(filtered);
+  }
+}
+
+function renderMobGrid(filtered){
+  const grid = document.getElementById('mobGrid'); if(!grid) return;
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty"><div class="empty-icon">${cars.length===0?'🏁':'🔍'}</div><div class="empty-title">${cars.length===0?'Garage is empty':'No results'}</div><div class="empty-sub">${cars.length===0?'Tap + to add your first car.':'Try a different term.'}</div></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(c=>`
+    <div class="car-card" onclick="openMobDetail('${c.id}')">
+      ${c.img?`<img class="car-img" src="${c.img}" alt="${esc(c.name)}" loading="lazy"/>`:`<div class="car-img-placeholder">🚗</div>`}
+      <div class="car-body">
+        <div class="car-name">${esc(c.name)}</div>
+        ${c.notes?`<div class="car-note">${esc(c.notes)}</div>`:''}
+        <div class="car-date">${fmtDate(c.added)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderDeskGrid(filtered){
+  const grid = document.getElementById('deskGrid'); if(!grid) return;
+  if(!filtered.length){
+    grid.innerHTML=`<div class="desk-empty"><div class="desk-empty-icon">${cars.length===0?'🏁':'🔍'}</div><div class="desk-empty-title">${cars.length===0?'Garage is empty':'No results'}</div><div class="desk-empty-sub">${cars.length===0?'Click <strong>+ Add Car</strong> in the sidebar to get started.':'Try searching for something else.'}</div></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(c=>`
+    <div class="desk-car-card${viewingId===c.id?' selected':''}" onclick="openDeskDetail('${c.id}')">
+      ${c.img?`<img class="desk-car-img" src="${c.img}" alt="${esc(c.name)}" loading="lazy"/>`:`<div class="desk-car-placeholder">🚗</div>`}
+      <div class="desk-car-body">
+        <div class="desk-car-name">${esc(c.name)}</div>
+        ${c.notes?`<div class="desk-car-note">${esc(c.notes)}</div>`:''}
+        <div class="desk-car-date">${fmtDate(c.added)}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── File input ── */
+function handleFile(e, ctx){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const src=ev.target.result;
+    if(ctx==='mob'){ pendingImgMob=src; document.getElementById('mobPhotoPicker').innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:cover;"/>` }
+    else { pendingImgDesk=src; document.getElementById('deskPhotoPicker').innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:cover;"/>` }
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+/* ── Save ── */
+function saveCar(ctx){
+  const nameEl=document.getElementById(ctx==='mob'?'mobCarName':'deskCarName');
+  const notesEl=document.getElementById(ctx==='mob'?'mobCarNotes':'deskCarNotes');
+  const name=nameEl.value.trim();
+  if(!name){ nameEl.focus(); nameEl.style.borderColor='var(--red)'; return; }
+  nameEl.style.borderColor='';
+  const notes=notesEl.value.trim();
+  const pendingImg=ctx==='mob'?pendingImgMob:pendingImgDesk;
+  if(editingId){
+    const idx=cars.findIndex(c=>c.id===editingId);
+    if(idx>=0) cars[idx]={...cars[idx],name,notes,img:pendingImg!==null?pendingImg:cars[idx].img};
+  } else {
+    cars.unshift({id:uid(),name,notes,img:pendingImg,added:Date.now()});
+  }
+  save(); updateStats();
+  if(ctx==='mob'){ closeMobAdd(); closeMobDetail() }
+  else { closeDeskAdd() }
+  editingId=null; pendingImgMob=null; pendingImgDesk=null;
+  render();
+  if(isDesktop()&&!editingId) openDeskDetail(cars[0].id);
+}
+
+/* ─────────── MOBILE actions ─────────── */
+function openMobAdd(){
+  editingId=null; pendingImgMob=null;
+  document.getElementById('mobSheetTitle').textContent='Add to Garage';
+  document.getElementById('mobCarName').value='';
+  document.getElementById('mobCarNotes').value='';
+  document.getElementById('mobPhotoPicker').innerHTML='<div class="photo-picker-inner"><div class="photo-icon">📷</div><div class="photo-hint">Tap to add photo</div></div>';
+  document.getElementById('mobAddOverlay').classList.add('active');
+  setTimeout(()=>document.getElementById('mobCarName').focus(),300);
+}
+function closeMobAdd(){ document.getElementById('mobAddOverlay').classList.remove('active'); editingId=null; pendingImgMob=null; }
+function openMobDetail(id){
+  viewingId=id;
+  const c=cars.find(x=>x.id===id); if(!c) return;
+  document.getElementById('mobDetailBody').innerHTML=`
+    ${c.img?`<img class="detail-img" src="${c.img}" alt="${esc(c.name)}"/>`:`<div class="detail-img-placeholder">🚗</div>`}
+    <div class="detail-name">${esc(c.name)}</div>
+    ${c.notes?`<div class="detail-note">${esc(c.notes)}</div>`:''}
+    <div class="detail-meta">Added ${fmtDate(c.added)}</div>
+    <div class="detail-actions">
+      <button class="btn btn-danger" onclick="confirmDelete('mob')">Delete</button>
+      <button class="btn btn-primary" onclick="openMobEdit()">Edit Car</button>
+    </div>`;
+  document.getElementById('mobDetailOverlay').classList.add('active');
+}
+function closeMobDetail(){ document.getElementById('mobDetailOverlay').classList.remove('active'); viewingId=null; }
+function openMobEdit(){
+  const c=cars.find(x=>x.id===viewingId); if(!c) return;
+  editingId=c.id; pendingImgMob=null;
+  document.getElementById('mobSheetTitle').textContent='Edit Car';
+  document.getElementById('mobCarName').value=c.name;
+  document.getElementById('mobCarNotes').value=c.notes||'';
+  const pp=document.getElementById('mobPhotoPicker');
+  pp.innerHTML=c.img?`<img src="${c.img}" style="width:100%;height:100%;object-fit:cover;"/>`:'<div class="photo-picker-inner"><div class="photo-icon">📷</div><div class="photo-hint">Tap to add photo</div></div>';
+  closeMobDetail();
+  document.getElementById('mobAddOverlay').classList.add('active');
+}
+function handleMobOverlay(e,id){ if(e.target===document.getElementById(id)){ if(id==='mobAddOverlay') closeMobAdd(); else closeMobDetail(); } }
+
+/* ─────────── DESKTOP actions ─────────── */
+function openDeskAdd(){
+  editingId=null; pendingImgDesk=null;
+  document.getElementById('deskModalTitle').textContent='Add to Garage';
+  document.getElementById('deskCarName').value='';
+  document.getElementById('deskCarNotes').value='';
+  document.getElementById('deskPhotoPicker').innerHTML='<div class="photo-picker-inner"><div class="photo-icon">📷</div><div class="photo-hint">Click to add photo</div></div>';
+  document.getElementById('deskModalOverlay').classList.add('active');
+  setTimeout(()=>document.getElementById('deskCarName').focus(),200);
+}
+function closeDeskAdd(){ document.getElementById('deskModalOverlay').classList.remove('active'); editingId=null; pendingImgDesk=null; }
+function handleDeskOverlay(e){ if(e.target===document.getElementById('deskModalOverlay')) closeDeskAdd(); }
+
+function openDeskDetail(id){
+  viewingId=id; render();
+  const c=cars.find(x=>x.id===id); if(!c) return;
+  const panel=document.getElementById('deskDetailPanel');
+  document.getElementById('deskPanelBody').innerHTML=`
+    ${c.img?`<img class="desk-panel-img" src="${c.img}" alt="${esc(c.name)}"/>`:`<div class="desk-panel-placeholder">🚗</div>`}
+    <div class="desk-panel-name">${esc(c.name)}</div>
+    ${c.notes?`<div class="desk-panel-note">${esc(c.notes)}</div>`:''}
+    <div class="desk-panel-meta">Added ${fmtDate(c.added)}</div>`;
+  document.getElementById('deskPanelFooter').innerHTML=`
+    <button class="btn btn-danger" onclick="confirmDelete('desk')">Delete</button>
+    <button class="btn btn-primary" onclick="openDeskEdit()">Edit Car</button>`;
+  panel.classList.add('open');
+  // shrink main area
+  document.querySelector('.desk-main').style.marginRight='360px';
+}
+function closeDeskDetail(){
+  document.getElementById('deskDetailPanel').classList.remove('open');
+  document.querySelector('.desk-main').style.marginRight='0';
+  viewingId=null; render();
+}
+function openDeskEdit(){
+  const c=cars.find(x=>x.id===viewingId); if(!c) return;
+  editingId=c.id; pendingImgDesk=null;
+  document.getElementById('deskModalTitle').textContent='Edit Car';
+  document.getElementById('deskCarName').value=c.name;
+  document.getElementById('deskCarNotes').value=c.notes||'';
+  const pp=document.getElementById('deskPhotoPicker');
+  pp.innerHTML=c.img?`<img src="${c.img}" style="width:100%;height:100%;object-fit:cover;"/>`:'<div class="photo-picker-inner"><div class="photo-icon">📷</div><div class="photo-hint">Click to add photo</div></div>';
+  document.getElementById('deskModalOverlay').classList.add('active');
+}
+
+/* ─────────── Delete ─────────── */
+function confirmDelete(ctx){
+  const c=cars.find(x=>x.id===viewingId);
+  if(!c) return;
+  if(confirm(`Delete "${c.name}"?`)){
+    cars=cars.filter(x=>x.id!==viewingId);
+    save(); updateStats();
+    if(ctx==='mob'){ closeMobDetail(); }
+    else { closeDeskDetail(); }
+    render();
+  }
+}
+
+/* ─────────── Init ─────────── */
+load();
+updateStats();
+render();
+window.addEventListener('resize', render);
+</script>
+</body>
+</html>
