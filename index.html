@@ -30,6 +30,7 @@
   --hw-color:  #FF2D20;
   --af-color:  #00D4FF;
   --lg-color:  #FFD600;
+  --df-color:  #BF5AF2;
 
   /* Surfaces — deep ink black */
   --bg:  #0A0A0C;
@@ -90,17 +91,6 @@ body.guest-mode .admin-only{ display:none !important; }
 .lightbox img{ max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; }
 @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
 
-/* ── RACING STRIPE (thicker, bolder) ───────── */
-.stripe{
-  height:5px; flex-shrink:0;
-  background: linear-gradient(90deg,
-    var(--red) 0%, var(--red) 30%,
-    var(--yellow) 30%, var(--yellow) 50%,
-    var(--cyan) 50%, var(--cyan) 70%,
-    var(--red) 70%, var(--red) 100%);
-  background-size:80px 100%;
-}
-
 /* ── HALFTONE SECTION DIVIDER ───────────────── */
 .section-label{
   font-family:'Bebas Neue',sans-serif;
@@ -115,6 +105,7 @@ body.guest-mode .admin-only{ display:none !important; }
 .section-label.hw-label::before{ background:var(--hw-color); }
 .section-label.af-label::before{ background:var(--af-color); }
 .section-label.lg-label::before{ background:var(--lg-color); }
+.section-label.df-label::before{ background:var(--df-color); }
 
 /* ── LOGIN ──────────────────────────────────── */
 #loginScreen{
@@ -176,6 +167,7 @@ body.guest-mode .admin-only{ display:none !important; }
 .filter-pill[data-cat="Hot Wheels"].active{ background:var(--hw-color); border-color:var(--hw-color); box-shadow:0 4px 20px rgba(255,45,32,0.4); }
 .filter-pill[data-cat="Action Figures"].active{ background:var(--af-color); border-color:var(--af-color); color:#000; box-shadow:0 4px 20px rgba(0,212,255,0.4); }
 .filter-pill[data-cat="Lego"].active{ background:var(--lg-color); border-color:var(--lg-color); color:#000; box-shadow:0 4px 20px rgba(255,214,0,0.4); }
+.filter-pill[data-cat="Die-cast figures"].active{ background:var(--df-color); border-color:var(--df-color); color:#fff; box-shadow:0 4px 20px rgba(191,90,242,0.4); }
 
 /* ══════════════════════════════════════════════
    MOBILE  (< 900px)
@@ -187,7 +179,6 @@ body.mobile-layout{
   min-height:100vh; max-width:480px; margin:0 auto;
   padding-bottom:110px;
 }
-body.mobile-layout .stripe{ width:100%; }
 
 /* ─ Header ─ */
 .mob-header{
@@ -310,6 +301,7 @@ body.mobile-layout .stripe{ width:100%; }
 .car-badge.hw{ background:var(--hw-color); color:#fff; }
 .car-badge.af{ background:var(--af-color); color:#000; }
 .car-badge.lg{ background:var(--lg-color); color:#000; }
+.car-badge.df{ background:var(--df-color); color:#fff; }
 
 /* text at bottom */
 .car-body{
@@ -424,6 +416,8 @@ body.mobile-layout .stripe{ width:100%; }
 .detail-category.hw{ background:var(--hw-color); color:#fff; }
 .detail-category.af{ background:var(--af-color); color:#000; }
 .detail-category.lg{ background:var(--lg-color); color:#000; }
+.detail-category.df{ background:var(--df-color); color:#fff; }
+
 .detail-note{
   font-size:15px; color:var(--text2); line-height:1.6; white-space:pre-wrap; margin-bottom:16px;
   background:var(--bg3); padding:16px; border-radius:12px; border:1px solid var(--border);
@@ -440,12 +434,11 @@ body.mobile-layout .stripe{ width:100%; }
 
   body{
     display:grid;
-    grid-template-rows:5px 1fr;
+    grid-template-rows:0px 1fr; /* Removed stripe */
     grid-template-columns:300px 1fr;
     height:100vh; overflow:hidden;
     max-width:none; margin:0; padding-bottom:0;
   }
-  body > .stripe{ grid-column:1/-1; grid-row:1; }
 
   /* ─ Sidebar ─ */
   .desk-sidebar{
@@ -562,6 +555,7 @@ body.mobile-layout .stripe{ width:100%; }
   .desk-section-heading.hw::before{ background:var(--hw-color); }
   .desk-section-heading.af::before{ background:var(--af-color); }
   .desk-section-heading.lg::before{ background:var(--lg-color); }
+  .desk-section-heading.df::before{ background:var(--df-color); }
 
   /* ─ Magazine-style DESKTOP cards ─ */
   .desk-grid{
@@ -618,6 +612,7 @@ body.mobile-layout .stripe{ width:100%; }
   .desk-car-badge.hw{ background:var(--hw-color); color:#fff; }
   .desk-car-badge.af{ background:var(--af-color); color:#000; }
   .desk-car-badge.lg{ background:var(--lg-color); color:#000; }
+  .desk-car-badge.df{ background:var(--df-color); color:#fff; }
 
   /* text overlay */
   .desk-car-body{
@@ -683,6 +678,8 @@ body.mobile-layout .stripe{ width:100%; }
   .desk-panel-category.hw{ background:var(--hw-color); color:#fff; }
   .desk-panel-category.af{ background:var(--af-color); color:#000; }
   .desk-panel-category.lg{ background:var(--lg-color); color:#000; }
+  .desk-panel-category.df{ background:var(--df-color); color:#fff; }
+
   .desk-panel-note{
     font-size:15px; color:var(--text2); line-height:1.7;
     white-space:pre-wrap; margin-bottom:20px;
@@ -771,7 +768,6 @@ body.mobile-layout .stripe{ width:100%; }
   </div>
 </div>
 
-<div class="stripe"></div>
 
 <!-- ═══════════════ MOBILE LAYOUT ═══════════════ -->
 <div class="mobile-only" id="mobileRoot" style="display:contents">
@@ -811,13 +807,14 @@ body.mobile-layout .stripe{ width:100%; }
        <button class="filter-pill" data-cat="Hot Wheels" onclick="setFilter('Hot Wheels')">Hot Wheels</button>
        <button class="filter-pill" data-cat="Action Figures" onclick="setFilter('Action Figures')">Action Figures</button>
        <button class="filter-pill" data-cat="Lego" onclick="setFilter('Lego')">Lego</button>
+       <button class="filter-pill" data-cat="Die-cast figures" onclick="setFilter('Die-cast figures')">Die-cast figures</button>
     </div>
     <div id="mobGridArea"></div>
   </div>
 </div>
 
 <!-- Mobile: Add/Edit sheet -->
-<div class="overlay mobile-only" id="mobAddOverlay" onclick="handleMobOverlay(event,'mobAddOverlay')">
+<div class="overlay mobile-only admin-only" id="mobAddOverlay" onclick="handleMobOverlay(event,'mobAddOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="mobSheetTitle">Add to Garage</div>
@@ -828,6 +825,7 @@ body.mobile-layout .stripe{ width:100%; }
           <option value="Hot Wheels">Hot Wheels</option>
           <option value="Action Figures">Action Figures</option>
           <option value="Lego">Lego</option>
+          <option value="Die-cast figures">Die-cast figures</option>
         </select>
       </div>
       <div class="form-field">
@@ -839,7 +837,7 @@ body.mobile-layout .stripe{ width:100%; }
       </div>
       <div class="form-field">
         <label class="form-label">Item Name</label>
-        <input class="form-input" type="text" id="mobCarName" placeholder="e.g. Bone Shaker, Spider-Man, Millennium Falcon..." autocomplete="off" />
+        <input class="form-input" type="text" id="mobCarName" placeholder="e.g. Bone Shaker, Spider-Man..." autocomplete="off" />
       </div>
       <div class="form-field">
         <label class="form-label">Notes</label>
@@ -914,6 +912,7 @@ body.mobile-layout .stripe{ width:100%; }
        <button class="filter-pill" data-cat="Hot Wheels" onclick="setFilter('Hot Wheels')">Hot Wheels</button>
        <button class="filter-pill" data-cat="Action Figures" onclick="setFilter('Action Figures')">Action Figures</button>
        <button class="filter-pill" data-cat="Lego" onclick="setFilter('Lego')">Lego</button>
+       <button class="filter-pill" data-cat="Die-cast figures" onclick="setFilter('Die-cast figures')">Die-cast figures</button>
     </div>
     <div id="deskGridArea"></div>
   </div>
@@ -929,8 +928,8 @@ body.mobile-layout .stripe{ width:100%; }
   <div class="desk-panel-footer admin-only" id="deskPanelFooter"></div>
 </div>
 
-<!-- Desktop: Add/Edit Modal -->
-<div class="desk-modal-overlay" id="deskModalOverlay" onclick="handleDeskOverlay(event)">
+<!-- Desktop: Add/Edit Modal (Fixed the Ghost Form Bug here) -->
+<div class="desk-modal-overlay desktop-only admin-only" id="deskModalOverlay" onclick="handleDeskOverlay(event)">
   <div class="desk-modal" id="deskModal">
     <div class="desk-modal-header">
       <span class="desk-modal-title" id="deskModalTitle">Add to Garage</span>
@@ -943,6 +942,7 @@ body.mobile-layout .stripe{ width:100%; }
           <option value="Hot Wheels">Hot Wheels</option>
           <option value="Action Figures">Action Figures</option>
           <option value="Lego">Lego</option>
+          <option value="Die-cast figures">Die-cast figures</option>
         </select>
       </div>
       <div class="form-field">
@@ -954,11 +954,11 @@ body.mobile-layout .stripe{ width:100%; }
       </div>
       <div class="form-field">
         <label class="form-label">Item Name</label>
-        <input class="form-input" type="text" id="deskCarName" placeholder="e.g. Bone Shaker, Spider-Man, Millennium Falcon..." autocomplete="off" />
+        <input class="form-input" type="text" id="deskCarName" placeholder="e.g. Bone Shaker, Spider-Man..." autocomplete="off" />
       </div>
       <div class="form-field">
         <label class="form-label">Notes</label>
-        <textarea class="form-textarea" id="deskCarNotes" rows="4" placeholder="Series, year, condition, value, where you got it..."></textarea>
+        <textarea class="form-textarea" id="deskCarNotes" rows="4" placeholder="Series, year, condition, value..."></textarea>
       </div>
     </div>
     <div class="desk-modal-actions">
@@ -997,7 +997,7 @@ let editingId = null;
 let viewingId = null;
 let pendingImgMob = null;
 let pendingImgDesk = null;
-const categories = ['Hot Wheels', 'Action Figures', 'Lego'];
+const categories = ['Hot Wheels', 'Action Figures', 'Lego', 'Die-cast figures'];
 let currentFilter = 'All';
 
 /* ── Full Screen Image Lightbox ── */
@@ -1008,7 +1008,6 @@ function openLightbox(src) {
 }
 
 /* ── Firebase Listener (Bulletproof Update) ── */
-// Removed .orderBy() from the query, sorting is now done safely in the browser.
 db.collection("items").onSnapshot((querySnapshot) => {
   cars = [];
   querySnapshot.forEach((doc) => {
@@ -1074,8 +1073,8 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 function fmtDate(ts){ if(!ts)return ''; return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) }
 function isDesktop(){ return window.innerWidth >= 900 }
-function getIcon(category) { return category === 'Lego' ? '🧱' : category === 'Action Figures' ? '🦸‍♂️' : '🚗'; }
-function getBadgeClass(category) { return category === 'Lego' ? 'lg' : category === 'Action Figures' ? 'af' : 'hw'; }
+function getIcon(category) { return category === 'Lego' ? '🧱' : category === 'Action Figures' ? '🦸‍♂️' : category === 'Die-cast figures' ? '🏍️' : '🚗'; }
+function getBadgeClass(category) { return category === 'Lego' ? 'lg' : category === 'Action Figures' ? 'af' : category === 'Die-cast figures' ? 'df' : 'hw'; }
 
 /* ── Stats ── */
 function updateStats(){
@@ -1100,12 +1099,11 @@ function setFilter(cat) {
   render();
 }
 
-/* ── Render (Bulletproof Update) ── */
+/* ── Render ── */
 function render(){
   const q = (document.getElementById(isDesktop()?'deskSearch':'mobSearch')||{value:''}).value.toLowerCase();
   
   const filtered = cars.filter(c => {
-    // Safely fallback to empty string so weird data doesn't crash the renderer
     const safeName = (c.name || '').toLowerCase();
     const safeNotes = (c.notes || '').toLowerCase();
     const matchesSearch = !q || safeName.includes(q) || safeNotes.includes(q);
@@ -1137,7 +1135,7 @@ function renderMobGrid(filtered, q){
   catsToShow.forEach(cat => {
     const items = filtered.filter(c => (c.category || 'Hot Wheels') === cat);
     if(items.length > 0) {
-      if(currentFilter === 'All') { html += `<div class="section-label">${cat}</div>`; }
+      if(currentFilter === 'All') { html += `<div class="section-label ${getBadgeClass(cat)}-label">${cat}</div>`; }
       html += `<div class="mob-grid">`;
       html += items.map(c=> `
         <div class="car-card" onclick="openMobDetail('${c.id}')">
@@ -1169,7 +1167,7 @@ function renderDeskGrid(filtered){
   catsToShow.forEach(cat => {
     const items = filtered.filter(c => (c.category || 'Hot Wheels') === cat);
     if(items.length > 0) {
-      if(currentFilter === 'All') { html += `<div class="desk-section-heading ${cat==='Hot Wheels'?'hw':cat==='Action Figures'?'af':'lg'}" style="margin-bottom:16px; margin-top:${html ? '40px' : '0'};">${cat}</div>`; }
+      if(currentFilter === 'All') { html += `<div class="desk-section-heading ${getBadgeClass(cat)}" style="margin-bottom:16px; margin-top:${html ? '32px' : '0'};">${cat}</div>`; }
       html += `<div class="desk-grid">`;
       html += items.map(c=> `
         <div class="desk-car-card${viewingId===c.id?' selected':''}" onclick="openDeskDetail('${c.id}')">
