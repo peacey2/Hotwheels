@@ -38,7 +38,7 @@ body{font-family:'Barlow',sans-serif;color:var(--text);overflow-x:hidden}
 /* ─── SECURITY FOR GUESTS ────────────────────────── */
 body.guest-mode .admin-only { display: none !important; }
 
-/* ─── LOADING STATE (NOW WORKS ON MOBILE) ────────── */
+/* ─── LOADING STATE ──────────────────────────────── */
 #loadingState { position: fixed; inset: 0; background: var(--bg); background-image: var(--bg-gradient); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; letter-spacing: 1px; }
 .spinner { width: 40px; height: 40px; border: 4px solid var(--border2); border-top-color: var(--red); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; box-shadow: 0 0 15px var(--red-glow);}
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -459,7 +459,7 @@ body.mobile-layout .stripe{width:100%}
   <img id="lightboxImg" src="" alt="Full size" />
 </div>
 
-<!-- LOADING OVERLAY (Fixed to work everywhere) -->
+<!-- LOADING OVERLAY -->
 <div id="loadingState">
   <div class="spinner"></div>
   Connecting to Cloud...
@@ -499,7 +499,6 @@ body.mobile-layout .stripe{width:100%}
       </div>
       <div class="header-actions">
         <button class="logout-btn" onclick="logout()">Exit</button>
-        <!-- Notice the admin-only class added below -->
         <button class="add-btn-mob admin-only" id="mobAddBtn" onclick="openMobAdd()" aria-label="Add item">+</button>
       </div>
     </div>
@@ -526,7 +525,6 @@ body.mobile-layout .stripe{width:100%}
        <button class="filter-pill" onclick="setFilter('Action Figures')">Action Figures</button>
        <button class="filter-pill" onclick="setFilter('Lego')">Lego</button>
     </div>
-    <!-- The actual grid goes here -->
     <div id="mobGridArea"></div>
   </div>
 </div>
@@ -609,7 +607,6 @@ body.mobile-layout .stripe{width:100%}
     <input class="desk-search" type="text" id="deskSearch" placeholder="Search garage..." oninput="render()" autocomplete="off" />
   </div>
 
-  <!-- Notice the admin-only class added below -->
   <button class="desk-add-btn admin-only" id="deskAddBtn" onclick="openDeskAdd()">+ Add Item</button>
 
   <div class="desk-footer">
@@ -714,7 +711,7 @@ let viewingId = null;
 let pendingImgMob = null;
 let pendingImgDesk = null;
 const categories = ['Hot Wheels', 'Action Figures', 'Lego'];
-let currentFilter = 'All'; // New filter state
+let currentFilter = 'All';
 
 /* ── Full Screen Image Lightbox ── */
 function openLightbox(src) {
@@ -723,21 +720,24 @@ function openLightbox(src) {
   document.getElementById('imageLightbox').classList.add('active');
 }
 
-/* ── Firebase Real-Time Listener ── */
-db.collection("items").orderBy("added", "desc").onSnapshot((querySnapshot) => {
+/* ── Firebase Listener (Bulletproof Update) ── */
+// Removed .orderBy() from the query, sorting is now done safely in the browser.
+db.collection("items").onSnapshot((querySnapshot) => {
   cars = [];
   querySnapshot.forEach((doc) => {
     cars.push(doc.data());
   });
   
-  // Hide loading screen once data arrives
+  // Safe local sort to prevent Firebase from hiding older items
+  cars.sort((a, b) => (b.added || 0) - (a.added || 0));
+  
   document.getElementById('loadingState').style.display = 'none';
   if (!currentUserRole) {
     document.getElementById('loginScreen').style.display = 'flex';
   }
   
   updateStats();
-  if (currentUserRole) render(); // Re-render if already logged in
+  if (currentUserRole) render(); 
 }, (error) => {
   console.error("Error connecting to Firebase: ", error);
   document.getElementById('loadingState').innerHTML = `Error connecting to database.<br><span style="font-size:16px; margin-top:10px;">Check your Firebase Config or Internet Connection.</span>`;
@@ -745,7 +745,7 @@ db.collection("items").orderBy("added", "desc").onSnapshot((querySnapshot) => {
 
 
 /* ── Role Management ── */
-let currentUserRole = null; // 'admin' or 'viewer'
+let currentUserRole = null; 
 
 function attemptAdminLogin() {
   const u = document.getElementById('loginUser').value;
@@ -765,7 +765,6 @@ function login(role) {
   currentUserRole = role;
   document.getElementById('loginScreen').style.display = 'none';
   
-  // Apply guest mode security class to hide all admin elements globally
   if (role === 'viewer') {
     document.body.classList.add('guest-mode');
   } else {
@@ -773,7 +772,6 @@ function login(role) {
   }
   
   document.getElementById('roleText').textContent = role === 'admin' ? 'Admin Mode' : 'Guest Mode';
-  
   render();
 }
 
@@ -796,11 +794,9 @@ function updateStats(){
   const total = cars.length;
   const photos = cars.filter(c=>c.img).length;
   const notes = cars.filter(c=>c.notes&&c.notes.trim()).length;
-  // mobile
   const m0=document.getElementById('mStat0'); if(m0) m0.textContent=total;
   const m1=document.getElementById('mStat1'); if(m1) m1.textContent=photos;
   const m2=document.getElementById('mStat2'); if(m2) m2.textContent=notes;
-  // desktop
   const d0=document.getElementById('dStat0'); if(d0) d0.textContent=total;
   const d1=document.getElementById('dStat1'); if(d1) d1.textContent=photos;
   const d2=document.getElementById('dStat2'); if(d2) d2.textContent=notes;
@@ -809,7 +805,6 @@ function updateStats(){
 /* ── Filtering Logic ── */
 function setFilter(cat) {
   currentFilter = cat;
-  // Update visually active pills
   document.querySelectorAll('.filter-pill').forEach(btn => {
     if(btn.textContent.trim() === cat) btn.classList.add('active');
     else btn.classList.remove('active');
@@ -817,13 +812,15 @@ function setFilter(cat) {
   render();
 }
 
-/* ── Render ── */
+/* ── Render (Bulletproof Update) ── */
 function render(){
   const q = (document.getElementById(isDesktop()?'deskSearch':'mobSearch')||{value:''}).value.toLowerCase();
   
-  // Filter by Search AND Filter Pills
   const filtered = cars.filter(c => {
-    const matchesSearch = !q || c.name.toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q);
+    // Safely fallback to empty string so weird data doesn't crash the renderer
+    const safeName = (c.name || '').toLowerCase();
+    const safeNotes = (c.notes || '').toLowerCase();
+    const matchesSearch = !q || safeName.includes(q) || safeNotes.includes(q);
     const matchesCat = currentFilter === 'All' || (c.category || 'Hot Wheels') === currentFilter;
     return matchesSearch && matchesCat;
   });
@@ -847,15 +844,12 @@ function renderMobGrid(filtered, q){
   }
   
   let html = '';
-  // Only show the selected category sections, or all of them
   let catsToShow = currentFilter === 'All' ? categories : [currentFilter];
   
   catsToShow.forEach(cat => {
     const items = filtered.filter(c => (c.category || 'Hot Wheels') === cat);
     if(items.length > 0) {
-      if(currentFilter === 'All') {
-         html += `<div class="section-label">${cat}</div>`;
-      }
+      if(currentFilter === 'All') { html += `<div class="section-label">${cat}</div>`; }
       html += `<div class="mob-grid">`;
       html += items.map(c=> `
         <div class="car-card" onclick="openMobDetail('${c.id}')">
@@ -885,9 +879,7 @@ function renderDeskGrid(filtered){
   catsToShow.forEach(cat => {
     const items = filtered.filter(c => (c.category || 'Hot Wheels') === cat);
     if(items.length > 0) {
-      if(currentFilter === 'All') {
-        html += `<div class="desk-section-title" style="margin-bottom:16px; margin-top:${html ? '32px' : '0'};">${cat}</div>`;
-      }
+      if(currentFilter === 'All') { html += `<div class="desk-section-title" style="margin-bottom:16px; margin-top:${html ? '32px' : '0'};">${cat}</div>`; }
       html += `<div class="desk-grid">`;
       html += items.map(c=> `
         <div class="desk-car-card${viewingId===c.id?' selected':''}" onclick="openDeskDetail('${c.id}')">
@@ -904,7 +896,7 @@ function renderDeskGrid(filtered){
   area.innerHTML = html;
 }
 
-/* ── File input (compressed to max 1000px / 0.75 quality JPEG) ── */
+/* ── File input ── */
 function compressImage(file, cb){
   const MAX=1000, QUALITY=0.75;
   const img=new Image();
@@ -944,7 +936,6 @@ async function saveCar(ctx){
   const notes=notesEl.value.trim();
   const pendingImg=ctx==='mob'?pendingImgMob:pendingImgDesk;
   
-  // Show loading state on button
   saveBtn.textContent = 'Saving...';
   saveBtn.disabled = true;
 
@@ -970,7 +961,6 @@ async function saveCar(ctx){
       });
     }
 
-    // Success cleanup
     if(ctx==='mob'){ closeMobAdd(); closeMobDetail() }
     else { closeDeskAdd() }
     editingId=null; pendingImgMob=null; pendingImgDesk=null;
