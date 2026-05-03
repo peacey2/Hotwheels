@@ -1003,8 +1003,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
+// Optional: Force long-polling if WebSockets are being blocked by a firewall
+db.settings({ experimentalForceLongPolling: true });
 
 let cars = [];
 let isDataLoaded = false;
