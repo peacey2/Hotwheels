@@ -63,6 +63,28 @@ body{
   background-size: 20px 20px;
 }
 
+/* ── SKELETON LOADING CARDS ─────────────────── */
+@keyframes shimmer{
+  0%{ background-position:-600px 0 }
+  100%{ background-position:600px 0 }
+}
+.skeleton-card{
+  border-radius:var(--r);
+  aspect-ratio:3/4;
+  border:2px solid var(--border);
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+  background-size:600px 100%;
+  animation:shimmer 1.5s infinite linear;
+}
+.desk-skeleton-card{
+  border-radius:var(--r);
+  aspect-ratio:3/4;
+  border:2px solid var(--border);
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+  background-size:600px 100%;
+  animation:shimmer 1.5s infinite linear;
+}
+
 /* ── GUEST LOCK ─────────────────────────────── */
 body.guest-mode .admin-only{ display:none !important; }
 
@@ -91,55 +113,7 @@ body.guest-mode .admin-only{ display:none !important; }
 .lightbox img{ max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; }
 @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
 
-/* ── SKELETON LOADING CARDS ─────────────────── */
-@keyframes shimmer{
-  0%{ background-position:-600px 0 }
-  100%{ background-position:600px 0 }
-}
-.skeleton-card{
-  border-radius:var(--r); overflow:hidden;
-  aspect-ratio:3/4; border:2px solid var(--border);
-  background:var(--bg3);
-  position:relative;
-}
-.skeleton-card::after{
-  content:'';
-  position:absolute; inset:0;
-  background:linear-gradient(90deg,
-    transparent 0%,
-    rgba(255,255,255,0.06) 40%,
-    rgba(255,255,255,0.10) 50%,
-    rgba(255,255,255,0.06) 60%,
-    transparent 100%);
-  background-size:600px 100%;
-  animation:shimmer 1.6s infinite linear;
-}
-.skeleton-bar{
-  height:14px; border-radius:6px; background:var(--bg4);
-  position:absolute; bottom:0; left:0; right:0;
-  margin:14px; margin-top:0;
-}
-.skeleton-bar.short{ width:55%; height:10px; margin-top:8px; }
-
-/* desktop skeleton */
-.desk-skeleton-card{
-  border-radius:var(--r); overflow:hidden;
-  aspect-ratio:3/4; border:2px solid var(--border);
-  background:var(--bg3); position:relative;
-}
-.desk-skeleton-card::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(90deg,
-    transparent 0%,
-    rgba(255,255,255,0.05) 40%,
-    rgba(255,255,255,0.09) 50%,
-    rgba(255,255,255,0.05) 60%,
-    transparent 100%);
-  background-size:600px 100%;
-  animation:shimmer 1.6s infinite linear;
-}
-
-
+/* ── HALFTONE SECTION DIVIDER ───────────────── */
 .section-label{
   font-family:'Bebas Neue',sans-serif;
   font-size:16px; letter-spacing:3px; color:var(--text3);
@@ -1109,7 +1083,7 @@ function login(role) {
   }
   
   document.getElementById('roleText').textContent = role === 'admin' ? 'Admin Mode' : 'Guest Mode';
-  // Render immediately — shows skeletons if data not yet loaded, real grid if already loaded
+  // Always render immediately — shows skeletons if Firebase hasn't responded yet
   render();
 }
 
@@ -1174,20 +1148,12 @@ function render(){
   }
 }
 
-function mobSkeletons(){
-  return `<div class="mob-grid">${Array(6).fill(0).map(()=>`
-    <div class="skeleton-card">
-      <div class="skeleton-bar"></div>
-      <div class="skeleton-bar short"></div>
-    </div>`).join('')}</div>`;
-}
-
 function renderMobGrid(filtered, q){
   const area = document.getElementById('mobGridArea'); if(!area) return;
 
-  // Still waiting on Firebase — show shimmer skeletons
   if(!isDataLoaded){
-    area.innerHTML = mobSkeletons();
+    const skels = Array(6).fill(0).map(()=>`<div class="skeleton-card"></div>`).join('');
+    area.innerHTML = `<div class="mob-grid">${skels}</div>`;
     return;
   }
 
@@ -1221,17 +1187,12 @@ function renderMobGrid(filtered, q){
   area.innerHTML = html;
 }
 
-function deskSkeletons(){
-  return `<div class="desk-grid">${Array(8).fill(0).map(()=>`
-    <div class="desk-skeleton-card"></div>`).join('')}</div>`;
-}
-
 function renderDeskGrid(filtered){
   const area = document.getElementById('deskGridArea'); if(!area) return;
 
-  // Still waiting on Firebase — show shimmer skeletons
   if(!isDataLoaded){
-    area.innerHTML = deskSkeletons();
+    const skels = Array(8).fill(0).map(()=>`<div class="desk-skeleton-card"></div>`).join('');
+    area.innerHTML = `<div class="desk-grid">${skels}</div>`;
     return;
   }
 
