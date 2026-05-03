@@ -91,7 +91,55 @@ body.guest-mode .admin-only{ display:none !important; }
 .lightbox img{ max-width:95vw; max-height:95vh; object-fit:contain; border-radius:8px; }
 @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
 
-/* ── HALFTONE SECTION DIVIDER ───────────────── */
+/* ── SKELETON LOADING CARDS ─────────────────── */
+@keyframes shimmer{
+  0%{ background-position:-600px 0 }
+  100%{ background-position:600px 0 }
+}
+.skeleton-card{
+  border-radius:var(--r); overflow:hidden;
+  aspect-ratio:3/4; border:2px solid var(--border);
+  background:var(--bg3);
+  position:relative;
+}
+.skeleton-card::after{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.06) 40%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0.06) 60%,
+    transparent 100%);
+  background-size:600px 100%;
+  animation:shimmer 1.6s infinite linear;
+}
+.skeleton-bar{
+  height:14px; border-radius:6px; background:var(--bg4);
+  position:absolute; bottom:0; left:0; right:0;
+  margin:14px; margin-top:0;
+}
+.skeleton-bar.short{ width:55%; height:10px; margin-top:8px; }
+
+/* desktop skeleton */
+.desk-skeleton-card{
+  border-radius:var(--r); overflow:hidden;
+  aspect-ratio:3/4; border:2px solid var(--border);
+  background:var(--bg3); position:relative;
+}
+.desk-skeleton-card::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.05) 40%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.05) 60%,
+    transparent 100%);
+  background-size:600px 100%;
+  animation:shimmer 1.6s infinite linear;
+}
+
+
 .section-label{
   font-family:'Bebas Neue',sans-serif;
   font-size:16px; letter-spacing:3px; color:var(--text3);
@@ -1008,6 +1056,8 @@ function openLightbox(src) {
 }
 
 /* ── Firebase Listener (Bulletproof Update) ── */
+let isDataLoaded = false;
+
 db.collection("items").onSnapshot((querySnapshot) => {
   cars = [];
   querySnapshot.forEach((doc) => {
@@ -1016,7 +1066,8 @@ db.collection("items").onSnapshot((querySnapshot) => {
   
   // Safe local sort to prevent Firebase from hiding older items
   cars.sort((a, b) => (b.added || 0) - (a.added || 0));
-  
+
+  isDataLoaded = true;
   document.getElementById('loadingState').style.display = 'none';
   if (!currentUserRole) {
     document.getElementById('loginScreen').style.display = 'flex';
@@ -1058,6 +1109,7 @@ function login(role) {
   }
   
   document.getElementById('roleText').textContent = role === 'admin' ? 'Admin Mode' : 'Guest Mode';
+  // Render immediately — shows skeletons if data not yet loaded, real grid if already loaded
   render();
 }
 
@@ -1122,8 +1174,23 @@ function render(){
   }
 }
 
+function mobSkeletons(){
+  return `<div class="mob-grid">${Array(6).fill(0).map(()=>`
+    <div class="skeleton-card">
+      <div class="skeleton-bar"></div>
+      <div class="skeleton-bar short"></div>
+    </div>`).join('')}</div>`;
+}
+
 function renderMobGrid(filtered, q){
   const area = document.getElementById('mobGridArea'); if(!area) return;
+
+  // Still waiting on Firebase — show shimmer skeletons
+  if(!isDataLoaded){
+    area.innerHTML = mobSkeletons();
+    return;
+  }
+
   if(!filtered.length){
     area.innerHTML=`<div class="empty"><div class="empty-icon">${cars.length===0?'🏁':'🔍'}</div><div class="empty-title">${cars.length===0?'Garage is empty':'No results'}</div><div class="empty-sub">${cars.length===0?'Tap + to add your first item.':'Try a different term.'}</div></div>`;
     return;
@@ -1154,8 +1221,20 @@ function renderMobGrid(filtered, q){
   area.innerHTML = html;
 }
 
+function deskSkeletons(){
+  return `<div class="desk-grid">${Array(8).fill(0).map(()=>`
+    <div class="desk-skeleton-card"></div>`).join('')}</div>`;
+}
+
 function renderDeskGrid(filtered){
   const area = document.getElementById('deskGridArea'); if(!area) return;
+
+  // Still waiting on Firebase — show shimmer skeletons
+  if(!isDataLoaded){
+    area.innerHTML = deskSkeletons();
+    return;
+  }
+
   if(!filtered.length){
     area.innerHTML=`<div class="desk-empty"><div class="desk-empty-icon">${cars.length===0?'🏁':'🔍'}</div><div class="desk-empty-title">${cars.length===0?'Garage is empty':'No results'}</div><div class="desk-empty-sub">${cars.length===0?'Click <strong>+ Add Item</strong> in the sidebar to get started.':'Try searching for something else.'}</div></div>`;
     return;
